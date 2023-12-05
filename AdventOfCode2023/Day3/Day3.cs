@@ -1,4 +1,6 @@
-﻿namespace AdventOfCode2023.Day3;
+﻿using System.Xml;
+
+namespace AdventOfCode2023.Day3;
 
 public static class Day3
 {
@@ -118,6 +120,132 @@ public static class Day3
         return index;
     }
 
+    private static long SumGearRation(this string[] input)
+    {
+        var result = 0L;
+
+        for (var i = 0; i < input.Length; i++)
+        {
+            for (var j = 0; j < input[i].Length; j++)
+            {
+                if (input[i][j] != '*')
+                {
+                    continue;
+                }
+
+                int hitNumbers = HitNumbers(input[i], j);
+
+                bool hitSame = hitNumbers != 0;
+                var hitTop = false;
+                var hitBottom = false;
+
+                if (i > 0)
+                {
+                    int tmp = HitNumbers(input[i - 1], j);
+                    hitTop = tmp != 0;
+                    hitNumbers += tmp;
+                }
+
+                if (i < input.Length)
+                {
+                    int tmp = HitNumbers(input[i + 1], j);
+                    hitBottom = tmp != 0;
+                    hitNumbers += tmp;
+                }
+
+                if (hitNumbers != 2)
+                {
+                    continue;
+                }
+
+                var tmpResult = 0L;
+
+                if (hitTop)
+                {
+                    tmpResult = 1;
+                    tmpResult *= GetNumbersOnRow(input[i - 1], j);
+                }
+
+                if (hitSame)
+                {
+                    tmpResult = tmpResult == 0 ? 1 : tmpResult;
+                    tmpResult *= GetNumbersOnRow(input[i], j);
+                }
+
+                if (hitBottom)
+                {
+                    tmpResult = tmpResult == 0 ? 1 : tmpResult;
+                    tmpResult *= GetNumbersOnRow(input[i + 1], j);
+                }
+
+                result += tmpResult;
+            }
+        }
+
+        return result;
+    }
+
+    private static long GetNumbersOnRow(string input, int index)
+    {
+        if (char.IsDigit(input[index]))
+        {
+            return GetNumberFromIndex(input, index);
+        }
+
+        if (index == 0 && char.IsDigit(input[1]))
+        {
+            return GetNumberFromIndex(input, 1);
+        }
+
+        if (index == input.Length - 1 && char.IsDigit(input[index - 1]))
+        {
+            return GetNumberFromIndex(input, index - 1);
+        }
+
+        bool isOne = false;
+        bool areAll = true;
+        bool isBefore = char.IsDigit(input[index - 1]);
+
+        isOne |= isBefore;
+        areAll &= isBefore;
+
+        isOne |= char.IsDigit(input[index + 1]);
+        areAll &= char.IsDigit(input[index + 1]);
+
+        return areAll ? GetNumberFromIndex(input, index - 1) * GetNumberFromIndex(input, index + 1)
+            : isOne ? isBefore ? GetNumberFromIndex(input, index - 1) : GetNumberFromIndex(input, index + 1)
+            : 0; // 1 needs to be multiplied be the other rows.
+    }
+
+    private static int HitNumbers(string input, int index)
+    {
+        if (char.IsDigit(input[index]))
+        {
+            return 1;
+        }
+
+        if (index == 0 && char.IsDigit(input[1]))
+        {
+            return 1;
+        }
+
+        if (index == input.Length - 1 && char.IsDigit(input[index - 1]))
+        {
+            return 1;
+        }
+
+        bool isOne = false;
+        bool areAll = true;
+
+        isOne |= char.IsDigit(input[index - 1]);
+        areAll &= char.IsDigit(input[index - 1]);
+
+        isOne |= char.IsDigit(input[index + 1]);
+        areAll &= char.IsDigit(input[index + 1]);
+
+        return areAll ? 2 : isOne ? 1 : 0;
+    }
+
     public class Challenge1 : IChallenge
     {
         public string Complete()
@@ -130,7 +258,7 @@ public static class Day3
     {
         public string Complete()
         {
-            return "FUCK";
+            return ReadAllLines(Path.GetFullPath(@".\Day3\input.txt")).SumGearRation().ToString();
         }
     }
 }
