@@ -13,7 +13,7 @@ public static class Day4
                      select card.Split(':', StringSplitOptions.TrimEntries)[1]
                                 .Split('|', StringSplitOptions.TrimEntries)
                      into values
-                     let winningNumbers = values[0].Split(' ').ToHashSet()
+                     let winningNumbers = values[0].Split(' ', StringSplitOptions.RemoveEmptyEntries).ToHashSet()
                      select values[1]
                             .Split(' ')
                             .Where(winningNumbers.Contains)
